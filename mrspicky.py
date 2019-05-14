@@ -26,7 +26,6 @@ class MemcpyFunction():
         self.src = src
         self.n = n
         self.dst_stack = dst_on_stack
-        #self.xrefs = xrefs
 
 class MrsPicky(Choose2):
 
@@ -34,7 +33,7 @@ class MrsPicky(Choose2):
         Choose2.__init__(
             self,
             title,
-            [ ["address", 16], ["name", 5], ["dst", 4], ["src", 4], ["n", 4], ["dst on stack?", 10] ],
+            [ ["address", 8], ["name", 8], ["dst", 4], ["src", 4], ["n", 4], ["dst on stack?", 4] ],
             flags = flags,
             width = width,
             height = height,
@@ -53,12 +52,10 @@ class MrsPicky(Choose2):
 
     def OnGetSize(self):
         n = len(self.items)
-        #print("getsize -> %d" % n)
         return n
 
     def feed(self, data):
         for item in data:
-            #print "0x%x" % data.ea, data.name, data.dst, data.src, data.n, data.dst_stack
             self.items.append(["0x%x" % item.ea,
                             item.name,
                             item.dst,
@@ -68,8 +65,6 @@ class MrsPicky(Choose2):
             self.ea_list.append(item.ea)
         self.Refresh()
         return
-        #return self.Show(self.modal) >= 0
-
 
 class memcpy_scanner_t(idaapi.ctree_visitor_t):
     def __init__(self, cfunc):
@@ -172,8 +167,13 @@ else:
     choser = MrsPicky("MrsPicky")
     choser.Show()
     for ea in func_list:
-        cfunc = idaapi.decompile(ea)
-        if cfunc and choser:
+        try:
+            cfunc = idaapi.decompile(ea)
+        except idaapi.DecompilationFailure:
+            print "Error decompiling function @ 0x%x" % ea
+            cfunc = None
+        if cfunc:
             ms = memcpy_scanner_t(cfunc)
             ms.apply_to(cfunc.body, None)
             choser.feed(ms.data)
+    print "Done."
