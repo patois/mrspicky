@@ -1,7 +1,7 @@
 # MrsPicky
 
 MrsPicky - An IDAPython decompiler script that helps auditing calls
-to the memcpy(dst, src, n) and memmove(dsr, c, n) functions.
+to the memcpy() and memmove() functions.
 
 This example code shows how the HexRays decompiler can be scripted in
 order to identify potentially dangerous calls to memcpy() function calls.
