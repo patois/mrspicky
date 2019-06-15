@@ -52,6 +52,7 @@ MEMCPY_FAM = ["memcpy", "memmove"]
 
 ID_NA = "."
 
+# -----------------------------------------------------------------------------
 class MemcpyLocation():
     def __init__(self, ea, name, dst, src, n, dst_type, n_max, problems):
         self.ea = ea
@@ -63,6 +64,7 @@ class MemcpyLocation():
         self.n_max = n_max
         self.problems = problems
 
+# -----------------------------------------------------------------------------
 class MrsPicky(Choose2):
     def __init__(self, title, nb = 5, flags=0, width=None, height=None, embedded=False, modal=False):
         Choose2.__init__(
@@ -108,6 +110,7 @@ class MrsPicky(Choose2):
         dst_type = self.items[n].dst_type
         return [ea, name, dst, src, _n, dst_type, max_n, ", ".join(self.items[n].problems)]
 
+# -----------------------------------------------------------------------------
 class func_parser_t(idaapi.ctree_visitor_t):
     def __init__(self, cfunc):
         idaapi.ctree_visitor_t.__init__(self, idaapi.CV_FAST)
@@ -237,35 +240,91 @@ class func_parser_t(idaapi.ctree_visitor_t):
                 self._parse_memcpy(e)
         return 0  
 
+# -----------------------------------------------------------------------------
+def is_ida_version(requested):
+    rv = requested.split(".")
+    kv = idaapi.get_kernel_version().split(".")
+
+    count = min(len(rv), len(kv))
+    if not count:
+        return False
+
+    for i in xrange(count):
+        if int(kv[i]) < int(rv[i]):
+            return False
+    return True
+
+# -----------------------------------------------------------------------------
 def get_callers(name):
     for xr in idautils.CodeRefsTo(idaapi.get_name_ea(idaapi.BADADDR, name), True):
         fn = idaapi.get_func(xr)
         if fn:
             yield fn.startEA
 
+# -----------------------------------------------------------------------------
 if not idaapi.init_hexrays_plugin():
     print "This script requires the HexRays decompiler plugin."
 else:
     func_list = []
     for name in MEMCPY_FAM:
-        func_list += get_callers(name) 
+        func_list += get_callers(name)
 
     func_list = set(func_list)
-    print "Checking %d functions." % (len(func_list))
+    nfuncs = len(func_list)
+    print "Checking %d functions." % (nfuncs)
 
     choser = MrsPicky("MrsPicky")
     choser.Show()
-    for ea in func_list:
-        #idaapi.showAuto(ea, idaapi.AU_CODE)
-        try:
-            cfunc = idaapi.decompile(ea)
-        except idaapi.DecompilationFailure:
-            print "Error decompiling function @ 0x%x" % ea
-            cfunc = None
+    
+    if is_ida_version("7.3"):
+        aborted = False
+        i = 0
+        x = nfuncs / 10 if nfuncs >= 10 else nfuncs
 
-        if cfunc:
-            fp = func_parser_t(cfunc)
-            fp.apply_to(cfunc.body, None)
-            choser.feed(fp.data)
+        idaapi.show_wait_box("Working...")
+
+        for ea in func_list:
+            bars = (int(round(i/(x), 0)))
+            funcname = idaapi.get_func_name(ea)
+            funcname = funcname if len(funcname) < 20 else funcname[:20] + "..."
+            progress = "[%s%s] : %3.2f%%" % (bars*'#', (10-bars)*'=',
+                (float(i)/float(nfuncs))*100.0)
+
+            idaapi.replace_wait_box("Total progress: %s\n\nScanning: %s\n\n" % (
+                progress, funcname))
+
+            try:
+                cfunc = idaapi.decompile(ea, flags = idaapi.DECOMP_NO_WAIT)
+            except idaapi.DecompilationFailure:
+                print "Error decompiling function @ 0x%x" % ea
+                cfunc = None
+
+            if cfunc:
+                fp = func_parser_t(cfunc)
+                fp.apply_to(cfunc.body, None)
+                choser.feed(fp.data)
+
+            if idaapi.user_cancelled():
+                aborted = True
+                break
+
+            i += 1
+        idaapi.hide_wait_box()
+        if aborted:
+            idaapi.warning("Aborted.")
+
+    # IDA <= 7.2
+    else:
+        for ea in func_list:
+            try:
+                cfunc = idaapi.decompile(ea)
+            except idaapi.DecompilationFailure:
+                print "Error decompiling function @ 0x%x" % ea
+                cfunc = None
+
+            if cfunc:
+                fp = func_parser_t(cfunc)
+                fp.apply_to(cfunc.body, None)
+                choser.feed(fp.data)
 
     print "Done."
