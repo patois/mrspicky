@@ -70,7 +70,14 @@ class MrsPicky(Choose2):
         Choose2.__init__(
             self,
             title,
-            [ ["caller", 20], ["function", 8], ["dst", 8], ["src", 8], ["n", 8], ["dst type", 8], ["max n", 8], ["problems", 20] ],
+            [ ["caller", 20 | idaapi.CHCOL_FNAME],
+            ["function", 8 | idaapi.CHCOL_FNAME],
+            ["dst", 8],
+            ["src", 8],
+            ["n", 8 | idaapi.CHCOL_DEC],
+            ["dst type", 8],
+            ["max n", 8 | idaapi.CHCOL_DEC],
+            ["problems", 20] ],
             flags = flags,
             width = width,
             height = height,
@@ -103,10 +110,10 @@ class MrsPicky(Choose2):
         src = self.items[n].src
 
         _n = self.items[n].n
-        _n = _n if type(_n) == str else "%d (0x%x)" % (_n, _n)
+        _n = _n if type(_n) == str else "%d" % (_n)
 
         max_n = self.items[n].n_max
-        max_n = max_n if type(max_n) == str else "%d (0x%x)" % (max_n, max_n)
+        max_n = max_n if type(max_n) == str else "%d" % (max_n)
         dst_type = self.items[n].dst_type
         return [ea, name, dst, src, _n, dst_type, max_n, ", ".join(self.items[n].problems)]
 
