@@ -65,9 +65,9 @@ class MemcpyLocation():
         self.problems = problems
 
 # -----------------------------------------------------------------------------
-class MrsPicky(Choose2):
-    def __init__(self, title, nb = 5, flags=0, width=None, height=None, embedded=False, modal=False):
-        Choose2.__init__(
+class MrsPicky(idaapi.Choose):
+    def __init__(self, title, flags=0, width=None, height=None, embedded=False, modal=False):
+        idaapi.Choose.__init__(
             self,
             title,
             [ ["caller", 20 | idaapi.CHCOL_FNAME],
@@ -110,10 +110,10 @@ class MrsPicky(Choose2):
         src = self.items[n].src
 
         _n = self.items[n].n
-        _n = _n if type(_n) == str else "%d" % (_n)
+        _n = _n if type(_n) == str else str(_n)
 
         max_n = self.items[n].n_max
-        max_n = max_n if type(max_n) == str else "%d" % (max_n)
+        max_n = max_n if type(max_n) == str else str(max_n)
         dst_type = self.items[n].dst_type
         return [ea, name, dst, src, _n, dst_type, max_n, ", ".join(self.items[n].problems)]
 
@@ -266,7 +266,7 @@ def get_callers(name):
     for xr in idautils.CodeRefsTo(idaapi.get_name_ea(idaapi.BADADDR, name), True):
         fn = idaapi.get_func(xr)
         if fn:
-            yield fn.startEA
+            yield fn.start_ea
 
 # -----------------------------------------------------------------------------
 if not idaapi.init_hexrays_plugin():
