@@ -256,7 +256,7 @@ def is_ida_version(requested):
     if not count:
         return False
 
-    for i in xrange(count):
+    for i in range(count):
         if int(kv[i]) < int(rv[i]):
             return False
     return True
@@ -270,7 +270,7 @@ def get_callers(name):
 
 # -----------------------------------------------------------------------------
 if not idaapi.init_hexrays_plugin():
-    print "This script requires the HexRays decompiler plugin."
+    msg("This script requires the HexRays decompiler plugin.")
 else:
     func_list = []
     for name in MEMCPY_FAM:
@@ -278,7 +278,7 @@ else:
 
     func_list = set(func_list)
     nfuncs = len(func_list)
-    print "Checking %d functions." % (nfuncs)
+    msg("Checking %d functions." % (nfuncs))
 
     choser = MrsPicky("MrsPicky")
     choser.Show()
@@ -303,7 +303,7 @@ else:
             try:
                 cfunc = idaapi.decompile(ea, flags = idaapi.DECOMP_NO_WAIT)
             except idaapi.DecompilationFailure:
-                print "Error decompiling function @ 0x%x" % ea
+                msg("Error decompiling function @ 0x%x" % ea)
                 cfunc = None
 
             if cfunc:
@@ -326,7 +326,7 @@ else:
             try:
                 cfunc = idaapi.decompile(ea)
             except idaapi.DecompilationFailure:
-                print "Error decompiling function @ 0x%x" % ea
+                msg("Error decompiling function @ 0x%x" % ea)
                 cfunc = None
 
             if cfunc:
@@ -334,4 +334,4 @@ else:
                 fp.apply_to(cfunc.body, None)
                 choser.feed(fp.data)
 
-    print "Done."
+    msg("Done.")
