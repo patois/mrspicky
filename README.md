@@ -35,7 +35,7 @@ functions such as malloc() whatsoever.
 ## Requirements
 
 This script is based on Python3 and requires IDA 7.3 to work. Python2
-version is available ![here](/tree/mrspicky-python2).
+version is available ![here](https://github.com/patois/mrspicky/tree/mrspicky-python2).
 
 For further help, check out vds5.py that comes with the HexRays SDK.
 
