@@ -1,6 +1,7 @@
 import idaapi
 import idautils
 import idc
+import ida_kernwin
 
 """MrsPicky - An IDAPython decompiler script that helps auditing calls
 to the memcpy() and memmove() functions.
@@ -65,18 +66,18 @@ class MemcpyLocation():
         self.problems = problems
 
 # -----------------------------------------------------------------------------
-class MrsPicky(idaapi.Choose):
+class MrsPicky(ida_kernwin.Choose):
     def __init__(self, title, flags=0, width=None, height=None, embedded=False, modal=False):
-        idaapi.Choose.__init__(
+        ida_kernwin.Choose.__init__(
             self,
             title,
-            [ ["caller", 20 | idaapi.CHCOL_FNAME],
-            ["function", 8 | idaapi.CHCOL_FNAME],
+            [ ["caller", 20 | ida_kernwin.Choose.CHCOL_PLAIN],
+            ["function", 8 | ida_kernwin.Choose.CHCOL_PLAIN],
             ["dst", 8],
             ["src", 8],
-            ["n", 8 | idaapi.CHCOL_DEC],
+            ["n", 8 | ida_kernwin.Choose.CHCOL_DEC],
             ["dst type", 8],
-            ["max n", 8 | idaapi.CHCOL_DEC],
+            ["max n", 8 | ida_kernwin.Choose.CHCOL_DEC],
             ["problems", 20] ],
             flags = flags,
             width = width,
