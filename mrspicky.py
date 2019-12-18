@@ -193,7 +193,7 @@ class func_parser_t(idaapi.ctree_visitor_t):
                     var offsets are different than that of IDA's.
                     They can be converted using stkoff_vd2ida() and
                     stkoff_ida2vd()"""
-                    offs = var_dst.get_stkoff()
+                    offs = get_stkoff(var_dst)
                     dst_type = "stack+0x%x" % offs
 
                     """compute stack size and the max value for
@@ -261,6 +261,10 @@ def is_ida_version(requested):
         if int(kv[i]) < int(rv[i]):
             return False
     return True
+
+# -----------------------------------------------------------------------------
+def get_stkoff(lvar_locator):
+    return lvar_locator.location.stkoff() if lvar_locator.location.is_stkoff() else -1
 
 # -----------------------------------------------------------------------------
 def get_callers(name):
