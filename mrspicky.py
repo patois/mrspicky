@@ -1,7 +1,6 @@
 import idaapi
 import idautils
 import idc
-import ida_kernwin
 
 """MrsPicky - An IDAPython decompiler script that helps auditing calls
 to the memcpy() and memmove() functions.
@@ -66,18 +65,18 @@ class MemcpyLocation():
         self.problems = problems
 
 # -----------------------------------------------------------------------------
-class MrsPicky(ida_kernwin.Choose):
+class MrsPicky(idaapi.Choose):
     def __init__(self, title, flags=0, width=None, height=None, embedded=False, modal=False):
-        ida_kernwin.Choose.__init__(
+        idaapi.Choose.__init__(
             self,
             title,
-            [ ["caller", 20 | ida_kernwin.Choose.CHCOL_PLAIN],
-            ["function", 8 | ida_kernwin.Choose.CHCOL_PLAIN],
+            [ ["caller", 20 | idaapi.CHCOL_FNAME],
+            ["function", 8 | idaapi.CHCOL_FNAME],
             ["dst", 8],
             ["src", 8],
-            ["n", 8 | ida_kernwin.Choose.CHCOL_DEC],
+            ["n", 8 | idaapi.CHCOL_DEC],
             ["dst type", 8],
-            ["max n", 8 | ida_kernwin.Choose.CHCOL_DEC],
+            ["max n", 8 | idaapi.CHCOL_DEC],
             ["problems", 20] ],
             flags = flags,
             width = width,
@@ -193,7 +192,7 @@ class func_parser_t(idaapi.ctree_visitor_t):
                     var offsets are different than that of IDA's.
                     They can be converted using stkoff_vd2ida() and
                     stkoff_ida2vd()"""
-                    offs = get_stkoff(var_dst)
+                    offs = var_dst.get_stkoff()
                     dst_type = "stack+0x%x" % offs
 
                     """compute stack size and the max value for
@@ -261,10 +260,6 @@ def is_ida_version(requested):
         if int(kv[i]) < int(rv[i]):
             return False
     return True
-
-# -----------------------------------------------------------------------------
-def get_stkoff(lvar_locator):
-    return lvar_locator.location.stkoff() if lvar_locator.location.is_stkoff() else -1
 
 # -----------------------------------------------------------------------------
 def get_callers(name):
