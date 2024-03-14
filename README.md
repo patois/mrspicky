@@ -1,7 +1,6 @@
 # MrsPicky
 
-MrsPicky - An IDAPython decompiler script that helps auditing calls
-to the memcpy() and memmove() functions.
+MrsPicky - An IDAPython decompiler script that helps auditing memcpy() and memmove() calls.
 
 ![mrspicky animated gif](/rsrc/picky.gif?raw=true)
 
